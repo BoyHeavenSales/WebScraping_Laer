@@ -29,7 +29,15 @@ def energia_solar():
             conteudo.append((titulo, data, link))
 
     return conteudo
+def gravar_resultado(lista, adress):
+    # Guardando o conteúdo em um arquivo de texto
+        with open(adress, "w", encoding="utf-8") as arq:
+            for titulo, data, link in lista:
+                arq.write(f"{titulo},{data}, {link}\n\n")
 
 if __name__ == "__main__":
-    lista = energia_solar()
-    print(lista)
+    lista_solar = energia_solar()
+    gravar_resultado(lista_solar, "files/noticias_solar.csv")
+    print(lista_solar)
+
+    
