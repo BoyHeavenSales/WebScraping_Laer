@@ -1,4 +1,5 @@
 import requests
+import csv
 from bs4 import BeautifulSoup
 
 def retorna_html(url):
@@ -26,18 +27,27 @@ def energia_solar():
             soup_noticia = BeautifulSoup(html_noticia, "html.parser")
             titulo = soup_noticia.find("h1", class_="elementor-heading-title elementor-size-default").text.strip()
             data = soup_noticia.find("span", class_="elementor-icon-list-text elementor-post-info__item elementor-post-info__item--type-date").text.strip()
-            conteudo.append((titulo, data, link))
+            conteudo.append([titulo, data, link])
 
     return conteudo
 def gravar_resultado(lista, adress):
     # Guardando o conteúdo em um arquivo de texto
-        with open(adress, "w", encoding="utf-8") as arq:
+        with open(adress, "r", encoding="utf-8") as arq:
+            lista_noticias_atuais = csv.reader(arq)
+            lista_links_csv = [linha[3].strip() for linha in lista_noticias_atuais]
+        
+        print(lista_links_csv)
+
+        with open(adress, "a", encoding="utf-8") as arq:
             for titulo, data, link in lista:
-                arq.write(f"{titulo},{data}, {link}\n\n")
+                if link in lista_links_csv:
+                    print("Ja existente")
+                else:
+                    arq.write(f'{titulo},{data},{link}\n')
 
 if __name__ == "__main__":
     lista_solar = energia_solar()
     gravar_resultado(lista_solar, "files/noticias_solar.csv")
-    print(lista_solar)
+    # print(lista_solar)
 
     
