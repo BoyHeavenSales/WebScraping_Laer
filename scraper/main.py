@@ -10,11 +10,17 @@ def retorna_html(url):
     else:
         print(f"Erro ao acessar a URL: {url}. Código de status: {page.status_code}")
         return None
-    
+
+def soup_url(url):
+    html = retorna_html(url)
+    if html:
+        return BeautifulSoup(html, "html.parser")
+    else:
+        return None
+
 def energia_solar():
     url = "https://canalsolar.com.br/noticias/"
-    html = retorna_html(url)
-    soup = BeautifulSoup(html, "html.parser")
+    soup = soup_url(url)
     noticias = soup.find("div", "elementor-element elementor-element-653ee24 e-flex e-con-boxed e-con e-child").find_all("h2")
     # Links para as principais notícias
     links = [l.a['href'] for l in noticias]
@@ -30,24 +36,44 @@ def energia_solar():
             conteudo.append([titulo, data, link])
 
     return conteudo
+
+def energia_eolica():
+    url = "https://abeeolica.org.br/categoria/noticias/agencia-abeeolica/"
+    soup = soup_url(url)
+    noticias = soup.find_all("div", class_="col-12 col-md-6 col-lg-4")
+    # Links para as principais notícias
+    links = [l.a['href'] for l in noticias]
+    # Conteudo a ser retornado
+    conteudo = []
+    # Navegando pelos links das notícias e extraindo o conteúdo
+    for noticia in noticias:
+        data_noticia = noticia.find("span", "date").text.strip()
+        conteudo.append([noticia.find("h5").text.strip(), data_noticia, noticia.a["href"]])
+
+    return conteudo
+
 def gravar_resultado(lista, adress):
     # Guardando o conteúdo em um arquivo de texto
         with open(adress, "r", encoding="utf-8") as arq:
             lista_noticias_atuais = csv.reader(arq)
             lista_links_csv = [linha[3].strip() for linha in lista_noticias_atuais]
-        
-        print(lista_links_csv)
-
-        with open(adress, "a", encoding="utf-8") as arq:
+            lista_noticias_do_dia  = []
             for titulo, data, link in lista:
-                if link in lista_links_csv:
-                    print("Ja existente")
-                else:
-                    arq.write(f'{titulo},{data},{link}\n')
+                if link not in lista_links_csv:
+                    lista_noticias_do_dia .append([titulo,data,link])
+        
+        # print(lista_links_csv)
+
+        with open(adress, "w", encoding="utf-8") as arq:
+            for noticia in lista_noticias_do_dia:
+                arq.write(f'{noticia[0]},{noticia[1]},{noticia[2]}\n')
 
 if __name__ == "__main__":
     lista_solar = energia_solar()
-    gravar_resultado(lista_solar, "files/noticias_solar.csv")
+    lista_eolica = energia_eolica()
+    # gravar_resultado(lista_solar, "database/noticias_solar.csv")
     # print(lista_solar)
+    # print(lista_eolica)
+    gravar_resultado(lista_eolica, "database/noticias_eolica.csv")
 
     
